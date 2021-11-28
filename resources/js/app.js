@@ -1,10 +1,9 @@
-
 function getmodeldata(regno){
     $.ajax(
     {
         type:"GET",
         url: "",
-        data:{ getmodeldata:true,regno: regno },
+        data:{ getmodeldata:'True',regno: regno },
         dataType: 'json',
         success: function( data ) 
     {
@@ -26,6 +25,35 @@ function getmodeldata(regno){
         document.getElementById("modelconduct").innerHTML = output[0].fields.Conduct;
     }
     })
+    $.ajax(
+        {
+            type:"GET",
+            url: "",
+            data:{ getmodeldatadue:'True',regno: regno },
+            dataType: 'json',
+            success: function( data ) 
+        {
+    
+            output = JSON.parse(data)
+            index = []
+            state = ""
+            for(x in output){
+                index.push(x)
+            }
+            for(let i=0; i<index.length; i++){
+
+                if (output[i].is_Done){
+                    state = "<div class='nk-tb-col'><span class='badge badge-dot badge-success'>Returned</span></div>"
+                } else {
+                    state = "<div class='nk-tb-col'><span class='badge badge-dot badge-warning'>Not Returned</span></div>"
+                }
+
+                document.getElementById("modeldue").innerHTML += "<div class='nk-tb-item' ><div class='nk-tb-col'><span class='tb-lead'><a href='#'>" + output[i].Dept + "</a></span></div>" + state + "</div>";
+
+            }
+            
+        }
+        })
 };
 
 function removedue(regno,dept){
@@ -58,6 +86,7 @@ function AcceptReq(regno,dept){
 
 $('#AddDue').on('submit', function(event){
     event.preventDefault();
+    console.log('hit adddue')
     $.ajax(
         {
             type:"POST",
@@ -73,6 +102,7 @@ $('#AddDue').on('submit', function(event){
 
 $('#search').on('submit', function(event){
     event.preventDefault();
+    console.log('hit search')
     $.ajax(
         {
             type:"GET",
@@ -92,49 +122,18 @@ $('#search').on('submit', function(event){
         })
 });
 
-function applyverification(){
-    
+$('#apply').on('submit', function(event){
+    event.preventDefault();
+    console.log('hit apply')
     $.ajax(
         {
             type:"POST",
             url: "",
-            data:{ purpose:$('#purpose').val(),date_of_leaving:$('#date_of_leaving').val(), csrfmiddlewaretoken: csrftoken },
+            data : { reason : $('#purpose').val(), date_of_leaving : $('#date_of_leaving').val(), csrfmiddlewaretoken: csrftoken },
             dataType: 'json',
             success: function( data ) 
         {
-            location.reload();
-
+            $("#nk-block-top").load(location.href + " #nk-block-top");
         }
         })
-};
-
-// function applyverification(){
-
-//     $.ajax(
-//         {
-//             type:"POST",
-//             url: "",
-//             data : { reason : $('#purpose').val(), date_of_leaving : $('#date_of_leaving').val(), csrfmiddlewaretoken: csrftoken },
-//             dataType: 'json',
-//             success: function( data ) 
-//         {
-//             $("#reload").load(location.href + "#reload");
-//         }
-//         })
-// };
-
-// $('#applyverification').on('submit', function(event){
-//     event.preventDefault();
-//     console.log('hit apply')
-//     $.ajax(
-//         {
-//             type:"POST",
-//             url: "",
-//             data : { reason : $('#purpose').val(), date_of_leaving : $('#date_of_leaving').val(), csrfmiddlewaretoken: csrftoken },
-//             dataType: 'json',
-//             success: function( data ) 
-//         {
-//             $("#nk-block-top").load(location.href + " #nk-block-top");
-//         }
-//         })
-// });
+});

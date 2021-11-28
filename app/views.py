@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
 from app.models import User, Staff, Student, Requests, Due
@@ -9,6 +10,7 @@ from django.core import serializers
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Q
+import json
 
 # Create your views here.
 def index(request):
@@ -146,7 +148,13 @@ def ajaxget(request):
     staff = Staff.objects.get(Dept=request.user.username)
     regno = request.GET.get('regno', None)
     search = request.GET.get('search', None)
-    if regno is not None:
+    getmodeldata = request.GET.get('getmodeldata', None)
+    getmodeldatadue = request.GET.get('getmodeldatadue', None)
+    if getmodeldatadue == 'True':
+        ReqDue = Due.objects.filter(Reg_No=regno).values()
+        data = json.dumps(list(ReqDue), cls=DjangoJSONEncoder)
+        return(data)
+    if getmodeldata == 'True':
         ReqStudent = serializers.serialize('json', [ Student.objects.get(Reg_No=regno, Year=staff.Year), ])
         return(ReqStudent)
     if search == 'True':
@@ -263,12 +271,12 @@ def staff(request):
         if request.is_ajax and request.method == "GET":
             response = ajaxget(request)
             if response:
-                return JsonResponse(response, safe=False)
+                return JsonResponse(response, safe=False , content_type="application/json")
             else:
                 return render(request, 'staff-home.html',{'staff':staff,'deptstudents':dept_students,'students':students,'reqs':reqs,'dues':dues})
         if request.is_ajax and request.method == "POST":
             response = ajaxpost(request)
-            return JsonResponse(response, safe=False)
+            return JsonResponse(response, safe=False , content_type="application/json")
 
         return render(request, 'staff-home.html',{'staff':staff,'deptstudents':dept_students,'students':students,'reqs':reqs,'dues':dues})
 
@@ -285,7 +293,7 @@ def student(request):
             purpose = request.POST.get('purpose', None)
             date_of_leaving = request.POST.get('date_of_leaving', None)
             if Requests.objects.filter(Reg_No=student.Reg_No).exists():
-                return JsonResponse('Request already exist', safe=False)
+                return JsonResponse('Request already exist', safe=False, content_type="application/json")
             else:
                 student.Purpose_Of_TC = purpose
                 student.Date_Of_Leaving = date_of_leaving
@@ -300,7 +308,7 @@ def student(request):
                         emails.append(staff["Email"])
                 for email in emails:
                     sendemail(student.Reg_No,email,'is requested for verification','Verification request!')
-                return JsonResponse('Success', safe=False)
+                return JsonResponse('Success', safe=False, content_type="application/json")
         else:
             print('hit normal')
             return render(request, 'student-home.html',{'student':student,'req':req})

@@ -1,16 +1,12 @@
 from django import forms
-from django.forms.widgets import Widget
+from app.models import Staff
 
-# iterable
-StaffDept =(
-    ("Mca", "Mca"),
-    ("Bca", "Bca"),
-    ("UG_Lab", "UG Lab"),
-    ("PG_Lab", "PG Lab"),
-    ("Library", "Library"),
-    ("Hostel", "Hostel"),
-    ("Office", "Office")
-)
+staffs = Staff.objects.filter().values()
+
+StaffDept = tuple()
+
+for staff in staffs:
+    StaffDept += ((staff["Dept"],staff["Dept"]),)
 
 StaffYear =(
     ("1", "1St year"),
